@@ -1,4 +1,5 @@
 #include "csapp.h"
+#include "job.h"
 #define MAXARGS 128
 
 /* Function prototypes */
@@ -7,7 +8,8 @@ int parseline( char *buf, char **argv );
 int builtin_command( char **argv ); 
 
 int main() {
-	char cmdline[MAXLINE];
+	char cmdline[MAXLINE];		// the string holding the command line
+	init_jobs();				// initialize the array of jobs
 
 	while (1) {
 		// print special prompt signaling that we are in the shell
@@ -16,7 +18,7 @@ int main() {
 		// get the command line from stdin
 		Fgets(cmdline, MAXLINE, stdin);
 
-		// exit on error
+		// exit when reaching end of file
 		if ( feof(stdin) ) 
 			exit(0);
 
@@ -42,24 +44,51 @@ void eval( char *cmdline ) {
 	// ignore empty lines
 	if (argv[0] == NULL) return;
 
-	if ( !builtin_command(argv) ) {
-		// create a child running user's job
-		if ( (pid = Fork()) == 0 ) {
-			if ( execve(argv[0], argv, environ) < 0 ) {
-				printf( "%s: Command not found.\n", argv[0] );
-				exit(0);
-			}
-		}
+	// if build in command, execute it immediately
+	if ( builtin_command(argv) ) return;
+	
+	sigset_t mask, prev_mask;
+	// Set up mask to indicate SIGCHLD should be blocked
+	Sigemptyset( &mask );
+	Sigaddset( &mask, SIGCHLD );
 
-		// parent waits for background job to terminate
-		if (!bg) {
-			int status;
-			if ( waitpid(pid, &status, 0) < 0 ) 
-				unix_error( "waifg: waitpid error" );
-		} else {
-			printf( "%d %s", pid, cmdline );
+	// Disable SIGCHLD Signal
+	Sigprocmask(SIG_BLOCK, &mask, &prev_mask);
+
+	// create a child running user's job
+	if ( (pid = Fork()) == 0 ) {
+		// unblock signal in child process
+		Sigprocmask( SIG_SETMASK, &prev_mask, NULL );
+
+		// create process group
+		Setpgid(0, 0);
+
+		if ( execvp(argv[0], argv) < 0 ) {
+			printf( "%s: Command not found.\n", argv[0] );
+			exit(0);
 		}
 	}
+
+	// int new_jid = create_job(pid, cmdline);
+
+	sigset_t mask_all, prev_all;
+    Sigfillset( &mask_all );
+    Sigprocmask( SIG_BLOCK, &mask_all, &prev_all );
+    int new_jid = create_job(pid, cmdline);
+    Sigprocmask( SIG_SETMASK, &prev_all, NULL );
+
+	// parent waits for background job to terminate
+	if (!bg) {
+		int status;
+		if ( waitpid(pid, &status, 0) < 0 ) 
+			unix_error( "waifg: waitpid error" );
+	} else {
+		printf( "%d %s", pid, cmdline );
+	}
+
+	// unblock child signal
+	Sigprocmask( SIG_SETMASK, &prev_mask, NULL );
+	
 }
 
 /* If first arg is a built-in command, run it and return true */
@@ -70,6 +99,12 @@ int builtin_command( char **argv ) {
 	// ignore singleton &
 	if ( strcmp(argv[0], "&") == 0 ) return 1;
 
+	// lists all background jobs
+	if ( strcmp(argv[0], "jobs") == 0 ) {
+		list_jobs();
+		return 1;
+	}
+	
 	// not a built in command
 	return 0;
 }
