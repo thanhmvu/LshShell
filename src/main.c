@@ -69,8 +69,6 @@ void eval( char *cmdline ) {
 		}
 	}
 
-	// int new_jid = create_job(pid, cmdline);
-
 	sigset_t mask_all, prev_all;
     Sigfillset( &mask_all );
     Sigprocmask( SIG_BLOCK, &mask_all, &prev_all );

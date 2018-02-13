@@ -1,14 +1,14 @@
-compile: main.c job.o csapp.o
-	gcc -O2 -lpthread -o ../install/bin/main main.c ../install/bin/job.o ../install/bin/csapp.o
+FLAGS = -O2 -lpthread
 
-job.o: job.c csapp.o
-	gcc -O2 -c job.c -o ../install/bin/job.o ../install/bin/csapp.o
-
-csapp.o: csapp.c
-	gcc -O2 -c csapp.c -o ../install/bin/csapp.o
+compile:
+	gcc main.c job.c csapp.c $(FLAGS) -o ../install/bin/main
+	gcc infinite_loop.c -o ../install/bin/infinite_loop
 
 run:
 	../install/bin/main
-	
+
 clean:
-	rm -rf ../install/bin/*.o
+	rm -rf ../install/bin/main
+
+clean-all:
+	rm -rf ../install/bin/*
