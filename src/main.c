@@ -102,6 +102,33 @@ int builtin_command( char **argv ) {
 		list_jobs();
 		return 1;
 	}
+
+	// fb <job id>
+	if ( strcmp(argv[0], "fg") == 0 ) {
+		// get the job's pid or jid
+		int id = parse_id( argv[1] );
+
+		if ( id != -1 && argv[2] == NULL ) {
+			bring_job_to_foreground( id, argv[1] );
+		} else {
+			printf("invalid format.");
+		}
+
+		return 1;
+	}
+
+	if ( strcmp(argv[0], "bg") == 0 ) {
+		// get the job's pid or jid
+		int id = parse_id( argv[1] );
+
+		if ( id != -1 && argv[2] == NULL ) {
+			bring_job_to_background( id, argv[1] );
+		} else {
+			printf("invalid format.");
+		}
+
+		return 1;
+	}
 	
 	// not a built in command
 	return 0;
@@ -144,5 +171,30 @@ int parseline( char *buf, char **argv ) {
 		argv[--argc] = NULL;
 	
 	return bg;
+}
+
+/* parse_id - get the input id from an argv string of form "%id" or "id" */
+int parse_id(char *argv) {
+	if ( argv == NULL ) return -1;
+
+	int id;
+
+	// format fg/bg %id
+	if ( *argv == '%' && strlen(argv) >= 2 ) {
+		id = atoi(argv + 1);
+		// if atoi returns 0 and argv is not "%0", argv is in invalid format
+		if ( id == 0 && strcmp(argv, "%0") != 0) {
+			return -1;
+		}
+	}
+	// format fg/bg id
+	else {
+		id = atoi(argv);
+		// if atoi returns 0 and argv is not "0", argv is in invalid format
+		if ( id == 0 && strcmp(argv, "0") != 0 ) 
+			return -1;
+	}
+
+	return id;
 }
 
