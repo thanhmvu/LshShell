@@ -1,5 +1,4 @@
-#include "csapp.h"
-#include "job.h"
+#include "signal_handler.h"
 #define MAXARGS 128
 
 /* Function prototypes */
@@ -7,7 +6,15 @@ void eval( char *cmdline );
 int parseline( char *buf, char **argv );
 int builtin_command( char **argv ); 
 
-int main() {
+int main(int argc, char **argv) {
+
+	if (Signal(SIGCHLD, sigchild_handler) == SIG_ERR)
+	  unix_error("signal child handler error");
+	if (Signal(SIGINT, sigint_handler) == SIG_ERR)
+	  unix_error("signal int handler error");
+	if (Signal(SIGTSTP, sigstop_handler) == SIG_ERR)
+	  unix_error("signal stop handler error");
+
 	char cmdline[MAXLINE];		// the string holding the command line
 	init_jobs();				// initialize the array of jobs
 
@@ -69,20 +76,24 @@ void eval( char *cmdline ) {
 		}
 	}
 
+	// blocking signal to protect the code below
 	sigset_t mask_all, prev_all;
     Sigfillset( &mask_all );
     Sigprocmask( SIG_BLOCK, &mask_all, &prev_all );
+
+    // save the job information to job array
     int new_jid = create_job(pid, cmdline);
+
+    // unblock signal when saving is done
     Sigprocmask( SIG_SETMASK, &prev_all, NULL );
 
-	// parent waits for background job to terminate
-	if (!bg) {
-		int status;
-		if ( waitpid(pid, &status, 0) < 0 ) 
-			unix_error( "waifg: waitpid error" );
-	} else {
-		printf( "%d %s", pid, cmdline );
-	}
+	if ( !bg ) {
+      set_foreground_pid( pid );
+      while(get_foreground_pid())
+        sigsuspend(&prev_mask);
+    }
+    else
+      printf("[%d] %d %s \t %s\n", new_jid, pid, "Running", cmdline);
 
 	// unblock child signal
 	Sigprocmask( SIG_SETMASK, &prev_mask, NULL );

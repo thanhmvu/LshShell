@@ -28,13 +28,16 @@ int find_next_usable_jid() {
 /* create_job - create a new Job and return its job ID */
 int create_job(pid_t pid, char *cmdline) {
 	int jid;
+	// find a usable jid
 	if ( (jid = find_next_usable_jid()) == -1 ) 
 		unix_error("Error: Maximum number of jobs reached. Cannot create new job.\n");
-	Job new_job = jobs[jid];
-	new_job.pid = pid;
-	new_job.status = RUNNING;
-	strcpy( new_job.command, cmdline );
-	new_job.in_use = 1;
+
+	// save information to job
+	jobs[jid].pid = pid;
+	jobs[jid].status = RUNNING;
+	strcpy( jobs[jid].command, cmdline );
+	jobs[jid].in_use = 1;
+
 	return jid;
 }
 
@@ -61,7 +64,7 @@ Job *get_job_from_pid( pid_t pid ) {
 /* get_job_from_jid - get a job in the jobs array whose jid (array index) matches input id */
 Job *get_job_from_jid( int jid ) {
 	if (jid >= 0 && jid < MAXJOBS )
-		return &jobs[jid];
+		return &(jobs[jid]);
 	return NULL;
 }
 
