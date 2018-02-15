@@ -27,6 +27,7 @@ void sigchild_handler(int sig) {
 
     /* be stopped */
     if (WIFSTOPPED(status)) {
+    	fprintf(stderr, "stoppedddd");
       if (pid == get_foreground_pid()) {
         set_foreground_pid(0);
       }
@@ -58,7 +59,7 @@ void sigchild_handler(int sig) {
 ** if there's a foreground job, terminate it
 ** else terminate the shell
  */
-void sigint_handler ( int sig ) {
+void sigint_handler( int sig ) {
 	// if there is a job running in the foreground, terminate it
 	if ( get_foreground_pid() != 0 ) {
 		Kill( get_foreground_pid(), SIGINT );

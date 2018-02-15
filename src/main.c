@@ -4,7 +4,7 @@
 /* Function prototypes */
 void eval( char *cmdline );
 int parseline( char *buf, char **argv );
-int builtin_command( char **argv ); 
+int builtin_command( char **argv );
 
 int main(int argc, char **argv) {
 
@@ -89,6 +89,7 @@ void eval( char *cmdline ) {
 
 	if ( !bg ) {
       set_foreground_pid( pid );
+      fprintf(stderr, "foregroup pid %d \n", pid);
       while(get_foreground_pid())
         sigsuspend(&prev_mask);
     }
@@ -209,3 +210,54 @@ int parse_id(char *argv) {
 	return id;
 }
 
+void sigchild_handler(int sig) {
+  int old_errno = errno;
+  int status;
+  pid_t pid;
+
+  sigset_t mask_all, prev_all;
+  Sigfillset(&mask_all);
+
+  /* exit or be stopped or continue */
+  while ((pid = waitpid(-1, &status, WNOHANG|WUNTRACED|WCONTINUED)) > 0) {
+    /* exit normally */
+    if (WIFEXITED(status) || WIFSIGNALED(status)) {
+      if ( pid == get_foreground_pid() ) {
+        set_foreground_pid(0);
+      } else {
+        Sio_puts("pid "); Sio_putl(pid); Sio_puts(" terminates\n");
+      }
+      Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+      delete_job(pid);
+      Sigprocmask(SIG_SETMASK, &prev_all, NULL);
+    }
+
+    /* be stopped */
+    if (WIFSTOPPED(status)) {
+    	fprintf(stderr, "stoppedddd");
+      if (pid == get_foreground_pid()) {
+        set_foreground_pid(0);
+      }
+      // set pid status stopped
+      Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+      Job *jp = get_job_from_pid(pid);
+      if ( jp ) jp->status = STOPPED;
+      Sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+      Sio_puts("pid "); Sio_putl(pid); Sio_puts(" be stopped\n");
+    }
+
+    /* continue */
+    if(WIFCONTINUED(status)) {
+      set_foreground_pid(pid);
+      // set pid status running
+      Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+      Job *jp = get_job_from_pid(pid);
+      if ( jp ) jp->status = RUNNING;
+      Sigprocmask(SIG_SETMASK, &prev_all, NULL);
+      Sio_puts("pid "); Sio_putl(pid); Sio_puts(" continue\n");
+    }
+  }
+
+  errno = old_errno;
+}
