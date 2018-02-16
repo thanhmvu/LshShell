@@ -2,9 +2,9 @@
 #define MAXJOBS 128
 
 // ***** typedef **** //
-typedef enum job_status { RUNNING, STOPPED, TERMINATED } job_status;
+typedef enum job_status { RUNNING, STOPPED } job_status;
 typedef struct {
-	int pid;				// process ID
+	pid_t pid;				// process ID
 	job_status status;		// job status
 	int in_use;				// whether job is still in use (not deleted)
 	char command[MAXLINE];	// the name of the command that runs this job
@@ -29,3 +29,9 @@ pid_t get_foreground_pid();
 // modifying job environment (fore / back ground)
 void bring_job_to_foreground(int, char *);
 void bring_job_to_background(int, char *);
+
+// get a Job pointer from its id
+Job *get_job_from_pid(pid_t pid);
+Job *get_job_from_jid(int jid);
+
+void set_job_status(Job *job, job_status status);
