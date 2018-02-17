@@ -1,7 +1,7 @@
 #include "signal_handler.h"
 
 /* sigchld_handler - when a child process has stopped or terminated */
-void sigchild_handler( int sig ) {
+void sigchld_handler( int sig ) {
 	int old_errno = errno;
 	int status;
 	pid_t pid;
@@ -9,40 +9,37 @@ void sigchild_handler( int sig ) {
 	sigset_t mask_all, prev_all;
 	Sigfillset(&mask_all);
 
-	while ((pid = waitpid(-1, &status, WNOHANG|WUNTRACED|WCONTINUED)) > 0) {
-
+	while ((pid = waitpid(-1, &status, WNOHANG|WUNTRACED)) > 0) {
+		// if child process terminates, either normally or by signal
 		if ( WIFEXITED(status) || WIFSIGNALED(status) ) {
+			// if process in foreground
 			if ( pid == get_foreground_pid() ) {
 				set_foreground_pid(0);
-			} else {
-				Sio_puts("pid "); Sio_putl(pid); Sio_puts(" terminates\n");
+				// when user types Ctrl + C or /bin/kill/, display a terminate success message
+				if ( WIFSIGNALED(status) ) {
+					printf("Job %d terminated by signal: Interrupt\n", pid);
+				}
 			}
 
+			// delete the terminated job from job array
 			Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
 			delete_job(pid);
 			Sigprocmask(SIG_SETMASK, &prev_all, NULL);
 		}
 
-
+		// if job stopped by Ctrl + Z
 		if ( WIFSTOPPED(status) ) {
-			fprintf(stderr, "stoppedddd");
+			// if process in foreground
 			if (pid == get_foreground_pid()) {
 				set_foreground_pid(0);
 			}
+			// update job status to STOPPED
 			Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
 			set_job_status( get_job_from_pid(pid), STOPPED);
 			Sigprocmask(SIG_SETMASK, &prev_all, NULL);
 
-			Sio_puts("pid "); Sio_putl(pid); Sio_puts(" be stopped\n");
-		}
-
-		if( WIFCONTINUED(status) ) {
-			set_foreground_pid( pid );
-			// set pid status running
-			Sigprocmask( SIG_BLOCK, &mask_all, &prev_all );
-			set_job_status( get_job_from_pid(pid), RUNNING );
-			Sigprocmask( SIG_SETMASK, &prev_all, NULL );
-			Sio_puts("pid "); Sio_putl(pid); Sio_puts(" continue\n");
+			// print success message
+			printf("Job [%d] %d stopped by signal: Stopped\n", get_jid_from_pid(pid), pid);
 		}
 	}
 
@@ -62,7 +59,7 @@ void sigint_handler( int sig ) {
 	else {
 		// revert action to SIGINT to default - which is to terminate this process
 		Signal( SIGINT, SIG_DFL );
-		Kill( getpid(), SIGINT );   // getpid returns the pid of the calling process
+		Kill( getpid(), SIGINT );   	// getpid returns the pid of the calling process
 	}
 }
 
@@ -79,6 +76,6 @@ void sigstop_handler( int sig ) {
 	else {
 		// revert action to SIGSTP to default - which is to stop this process
 		Signal( SIGTSTP, SIG_DFL );
-		Kill( getpid(), SIGTSTP );    // getpid returns the pid of the calling process
+		Kill( getpid(), SIGTSTP );    	// getpid returns the pid of the calling process
 	}
 }

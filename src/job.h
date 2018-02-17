@@ -33,5 +33,6 @@ void bring_job_to_background(int, char *);
 // get a Job pointer from its id
 Job *get_job_from_pid(pid_t pid);
 Job *get_job_from_jid(int jid);
+int get_jid_from_pid(pid_t pid);
 
 void set_job_status(Job *job, job_status status);

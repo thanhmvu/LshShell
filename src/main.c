@@ -8,17 +8,17 @@ int builtin_command( char **argv );
 
 int main(int argc, char **argv) {
 
-	// register sigchld handler
-	if (Signal(SIGCHLD, sigchild_handler) == SIG_ERR)
-	  unix_error("signal child handler error");
+	// register signal handler for when child finishes
+	if (Signal(SIGCHLD, sigchld_handler) == SIG_ERR)
+		unix_error("signal child handler error");
 
-	// register sigint handler
+	// register Ctrl + C signal handler
 	if (Signal(SIGINT, sigint_handler) == SIG_ERR)
-	  unix_error("signal int handler error");
+		unix_error("signal int handler error");
 
-	// register sigtstp handler
+	// register Ctrl + Z signal handler
 	if (Signal(SIGTSTP, sigstop_handler) == SIG_ERR)
-	  unix_error("signal stop handler error");
+		unix_error("signal stop handler error");
 
 	char cmdline[MAXLINE];		// the string holding the command line
 	init_jobs();				// initialize the array of jobs
@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
 }
 
 void eval( char *cmdline ) {
-	char *argv[MAXARGS];  // argument list for execve() 
-	char buf[MAXLINE];    // holds modified command line
-	int bg;         // indicate whether the job is in background or foreground
-	pid_t pid;        // process id
+	char *argv[MAXARGS];  	// argument list for execve() 
+	char buf[MAXLINE];    	// holds modified command line
+	int bg;         		// indicate whether the job is in background or foreground
+	pid_t pid;        		// process id
 
 	// copy the command line as a string to buf so that it can be modified and parsed
 	strcpy( buf, cmdline );
@@ -55,11 +55,11 @@ void eval( char *cmdline ) {
 	// ignore empty lines
 	if (argv[0] == NULL) return;
 
-	// if build in command, execute it immediately
+	// if built-in command, execute it immediately
 	if ( builtin_command(argv) ) return;
 
-	sigset_t mask, prev_mask;
 	// Set up mask to indicate SIGCHLD should be blocked
+	sigset_t mask, prev_mask;
 	Sigemptyset( &mask );
 	Sigaddset( &mask, SIGCHLD );
 
@@ -74,9 +74,10 @@ void eval( char *cmdline ) {
 		// create process group
 		Setpgid(0, 0);
 
+		// execute bash command with environment variables
 		if ( execvp(argv[0], argv) < 0 ) {
-		  printf( "%s: Command not found.\n", argv[0] );
-		  exit(0);
+			printf( "%s: Command not found.\n", argv[0] );
+			exit(0);
 		}
 	}
 
@@ -92,15 +93,18 @@ void eval( char *cmdline ) {
 	Sigprocmask( SIG_SETMASK, &prev_all, NULL );
 
 	if ( !bg ) {
-	  set_foreground_pid( pid );
-	  fprintf(stderr, "foregroup pid %d \n", pid);
-	  while(get_foreground_pid())
-	    sigsuspend(&prev_mask);
+		// update the foreground pid tracker	
+		set_foreground_pid( pid );
+
+		// while a process is running in foreground, block the REPL
+		while(get_foreground_pid()) {
+			sigsuspend(&prev_mask);
+		}
 	}
 	else
-	  printf("[%d] %d %s \t %s\n", new_jid, pid, "Running", cmdline);
+		printf("[%d] %d %s \t %s\n", new_jid, pid, "Running", cmdline);
 
-	// unblock child signal
+	// enable SIGCHLD signal again
 	Sigprocmask( SIG_SETMASK, &prev_mask, NULL );
 
 }
@@ -118,8 +122,8 @@ int builtin_command( char **argv ) {
 
 	// lists all background jobs
 	if ( strcmp(argv[0], "jobs") == 0 ) {
-	list_jobs();
-	return 1;
+		list_jobs();
+		return 1;
 	}
 
 	// fb <job id>
@@ -128,22 +132,23 @@ int builtin_command( char **argv ) {
 		int id = parse_id( argv[1] );
 
 		if ( id != -1 && argv[2] == NULL ) {
-		  bring_job_to_foreground( id, argv[1] );
+			bring_job_to_foreground( id, argv[1] );
 		} else {
-		  printf("invalid format.");
+			printf("Invalid format.");
 		}
 
 		return 1;
 	}
 
+	// bg <job id>
 	if ( strcmp(argv[0], "bg") == 0 ) {
 		// get the job's pid or jid
 		int id = parse_id( argv[1] );
 
 		if ( id != -1 && argv[2] == NULL ) {
-		  bring_job_to_background( id, argv[1] );
+			bring_job_to_background( id, argv[1] );
 		} else {
-		  printf("invalid format.");
+			printf("Invalid format.");
 		}
 
 		return 1;

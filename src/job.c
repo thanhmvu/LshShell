@@ -63,9 +63,18 @@ Job *get_job_from_pid( pid_t pid ) {
 
 /* get_job_from_jid - get a job in the jobs array whose jid (array index) matches input id */
 Job *get_job_from_jid( int jid ) {
-    if (jid >= 0 && jid < MAXJOBS )
+    if (jid >= 0 && jid < MAXJOBS)
         return &(jobs[jid]);
     return NULL;
+}
+
+/* get_job_from_jid - get a job jid in the jobs array whose jid (array index) matches input id */
+int get_jid_from_pid( pid_t pid ) {
+    for ( int i = 0 ; i < MAXJOBS ; i++ ) {
+        if ( jobs[i].pid == pid )
+            return i;
+    }
+    return -1;
 }
 
 /* bring_job_to_foreground - bring the job with the input id to the foreground */
@@ -78,17 +87,37 @@ void bring_job_to_foreground( int id, char *input ) {
     Sigprocmask( SIG_BLOCK, &mask, &prev_mask );
 
     // get the job pid, either based on the parsed id or by looking up the job array
-    pid_t pid = ( input[0] == '%' ? get_job_from_jid(id)->pid : id );
+    pid_t pid = -1;
+    Job *job;
 
-    // send SIGCONT to job
-    Kill( pid, SIGCONT );
+    // if input has %, treat id as jid
+    if ( input[0] == '%' ) {
+        job = get_job_from_jid(id);
+        if ( job && job->in_use ) pid = job->pid;
+    } 
+    // if input has no %, treat id as pid
+    else {
+        job = get_job_from_pid(id);
+        if ( job && job->in_use ) pid = id;
+    }
 
-    // run job it foreground
-    set_foreground_pid( pid );
+    if (pid != -1) {
+        // send SIGCONT to job
+        Kill( pid, SIGCONT );
 
-    // block the REPL until this foreground job ends
-    while ( get_foreground_pid(pid) ) {
-        sigsuspend( &prev_mask );
+        // run job it foreground
+        set_foreground_pid( pid );
+        set_job_status( job, RUNNING );
+
+        // success message
+        printf("[%d] %d \t %s\n", get_jid_from_pid(pid), pid, job->command);
+
+        // block the REPL until this foreground job ends
+        while ( get_foreground_pid(pid) ) {
+            sigsuspend( &prev_mask );
+        }
+    } else {
+        printf("%d: No such process.\n", id);
     }
 
     // unblock child signal
@@ -97,15 +126,38 @@ void bring_job_to_foreground( int id, char *input ) {
 
 /* bring_job_to_foreground - bring the job with the input id to the foreground */
 void bring_job_to_background( int id, char *input ) {
+    
     // get the job pid, either based on the parsed id or by looking up the job array
-    pid_t pid = ( input[0] == '%' ? get_job_from_jid(id)->pid : id );
+    pid_t pid = -1;
+    Job *job;
+
+    // if input has %, treat id as jid
+    if ( input[0] == '%' ) {
+        job = get_job_from_jid(id);
+        if ( job && job->in_use) pid = job->pid;
+    } 
+    // if input has no %, treat id as pid
+    else {
+        job = get_job_from_pid(id);
+        if ( job && job->in_use) pid = id;
+    }
 
     // send SIGCONT to job
-    Kill( pid, SIGCONT );
+    if ( pid != -1) {
+        // send SIGCONT to job
+        Kill( pid, SIGCONT );
+
+        // update status
+        set_job_status( job, RUNNING );
+        // success message
+        printf("[%d] %d \t %s\n", get_jid_from_pid(pid), pid, job->command);
+    } else {
+        printf("%d: No such process.\n", id);
+    }
 }
 
 /* set the foreground_pid variable to the id of the job currently running on foreground */
-void set_foreground_pid( pid_t id)  {
+void set_foreground_pid( pid_t id )  {
     foreground_pid = id;
 }
 
