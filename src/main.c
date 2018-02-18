@@ -107,7 +107,7 @@ void eval( char *cmdline ) {
 
 		// execute bash command with environment variables
 		if ( execvp(expanded_argv[0], expanded_argv) < 0 ) {
-			printf( "%s: Command not found.\n", argv[0] );
+			printf( "%s: Command not found.\n", expanded_argv[0] );
 			exit(0);
 		}
 	}
