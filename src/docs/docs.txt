@@ -27,3 +27,4 @@ Huy Nguyen – Thanh Vu
 	* Additional features
 		- Support sequence of commands, e.g., command1 ; command2 ; command3 ; ...
 		- Support navigation between directories with 'cd'
+		- Support more animals besides cow - we "shell" diversity
