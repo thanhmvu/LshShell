@@ -143,6 +143,11 @@ void eval( char *cmdline ) {
 	// enable SIGCHLD signal again
 	Sigprocmask( SIG_SETMASK, &prev_mask, NULL );
 
+	// Print stats
+	if (stats_enabled(STATS)) {
+		display_stats(STATS);
+	}
+	
 	// free memory 
 	for ( int i = 0 ; i < cnt_expanded_argv ; i++ ) {
 		free(expanded_argv[i]);
@@ -200,9 +205,9 @@ int builtin_command( char **argv ) {
 		return 1;
 	}
 	
-	/* Set environment variables */
+	// Set environment variables
 	if (strchr(argv[0], '=')) {
-		if (argv[1] != NULL) { /* too many arguments */
+		if (argv[1] != NULL) { // too many arguments
 			printf("%s: Command not found.\n", argv[1]);
 		} else {
 			set_env_var(argv);
@@ -210,7 +215,7 @@ int builtin_command( char **argv ) {
 		return 1;
 	}
 	
-	/* Enable stats */
+	// Enable stats
 	if (!strcmp(argv[0], "stats")) {
 		enable_stats(argv, &STATS);
 		return 1;

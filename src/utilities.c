@@ -172,20 +172,22 @@ void display_stats(struct Stats st) {
 	} 
 	
 	else {
+		fprintf(stderr,"\n");
+		
 		if (st.u)
-			fprintf(stderr,"user mode: %ld.%06ld seconds\n", u.ru_utime.tv_sec, u.ru_utime.tv_usec);
+			fprintf(stderr,"[STATS] user mode: %ld.%06ld seconds\n", u.ru_utime.tv_sec, u.ru_utime.tv_usec);
 		
 		if (st.s)
-			fprintf(stderr,"sys mode: %ld.%06ld seconds\n", u.ru_stime.tv_sec, u.ru_stime.tv_usec);
+			fprintf(stderr,"[STATS] sys mode: %ld.%06ld seconds\n", u.ru_stime.tv_sec, u.ru_stime.tv_usec);
 		
 		if (st.p)
-			fprintf(stderr,"hard page faults: %ld\n", u.ru_majflt);
+			fprintf(stderr,"[STATS] hard page faults: %ld\n", u.ru_majflt);
 		
 		if (st.v)
-			fprintf(stderr,"voluntary context switches: %ld\n", u.ru_nvcsw);
+			fprintf(stderr,"[STATS] voluntary context switches: %ld\n", u.ru_nvcsw);
 		
 		if (st.i)
-			fprintf(stderr,"involuntary context switches: %ld\n", u.ru_nivcsw);
+			fprintf(stderr,"[STATS] involuntary context switches: %ld\n", u.ru_nivcsw);
 	}
 }
 
