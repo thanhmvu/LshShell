@@ -3,7 +3,26 @@ PROJECT DOCUMENT
 Huy Nguyen – Thanh Vu
 
 1.	Obstacles we overcame
-	* Familiarizing with C.  This is our very first project in C (and a major one no less). There were many features we take for granted in Java (e.g., splitting string) that we ended up struggling to re-implement in C. Huy was particularly startled when he realized C has no built-in Boolean type.
-	* Theory to practice. Concurrency is particularly confusing, and while we knew the basic concepts 
+	* Familiarizing with C.  
+	This is our very first project in C (and a major one no less). There were many features we take for granted in Java (e.g., splitting string) that we ended up struggling to re-implement in C. Huy was particularly startled when he realized C has no built-in Boolean type. Thanh spent half of the project time attempting to find nice, clean way to initialize and return (arrays of) arrays of string from functions.
+	
+	* Theory to practice. 
+	Concurrency is particularly confusing, and while we knew the basic concepts 
+
 
 2.	Things we learned
+	* Technical notes
+		
+		You can have bug in makefile.
+		
+		Sometime malloc is the only "nice" way to work with arrays of strings. Do not forget to free memory afterwards.
+		
+		When code piping in C, it is critical for the parent to close all file descriptors after the children dup them.
+
+
+3. Project enhancements
+	* Additional features
+		
+		Support sequence of commands, e.g., command1 ; command2 ; command3 ; ...
+		
+		Support navigation between directories with 'cd'
