@@ -39,4 +39,5 @@ void set_env_var(char **argv);
 
 int run_pipe_commands(char **expanded_argv, int pipes, pid_t *pid);
 
+void cowsay( char **argv );
 #endif

@@ -296,3 +296,18 @@ void substitute_env_vars_no_space(char *str, char * result) {
 	}
 	result[cnt]='\0';
 }
+
+/* cowsay - draw a cow saying whatever you want */
+void cowsay(char **argv) {
+	printf("| ");
+	for (int i = 1 ; argv[i] != NULL ; i++) {
+		printf("%s ", argv[i]);
+	}
+	printf("|\n");
+	printf(" \\ \n");
+	printf("  \\ ^__^\n");
+	printf("    (oo)\\_______\n");
+	printf("    (__)\\       )\\/\\\n");
+	printf("        ||----w |\n");
+	printf("        ||     ||\n");
+}
