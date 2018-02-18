@@ -1,3 +1,107 @@
-.TH Mini-Shell 7 "02-17-2018" "Version 1.0"
+.TH Mini-Shell 1 "02-17-2018" "Version 1.0"
 .SH NAME
-Lafayette Shell - A mini Linux shell
+lsh - Lafayette Shell
+
+.SH SYNOPSIS
+.B lsh 
+[options] [file]
+
+.""""""""""""""""""""""""""""""""""
+.SH DESCRIPTION
+.B lsh
+is a mini shell for Linux. It can create, monitor, and report processes in Linux. It also creates pipelines, and works with stdin, stdout, stderr, PATH, and environment variables.
+.""""""""""""""""""""""""""""""""""
+
+.""""""""""""""""""""""""""""""""""
+.SH "SHELL GRAMMAR"
+.SS "Simple commands"
+A \fIsimple command\fP is a sequence of optional variable assignments
+followed by \fBblank\fP-separated words and redirections, and
+terminated by a \fIcontrol operator\fP.  The first word
+specifies the command to be executed, and is passed as argument zero.
+The remaining words are passed as arguments to the invoked command.
+.PP
+The return value of a \fIsimple command\fP is its exit status, or
+128+\fIn\^\fP if the command is terminated by signal
+.IR n .
+.SS Pipelines
+.PP
+A \fIpipeline\fP is a sequence of one or more commands separated by
+the character
+.BR | .
+The format for a pipeline is:
+.RS
+.PP
+[\fBtime\fP [\fB\-p\fP]] [ ! ] \fIcommand\fP [ \fB|\fP \fIcommand2\fP ... ]
+.RE
+.PP
+The standard output of
+.I command
+is connected via a pipe to the standard input of
+.IR command2 .
+.PP
+Each command in a pipeline is executed as a separate process (i.e., in a
+subshell).
+.""""""""""""""""""""""""""""""""""
+
+.""""""""""""""""""""""""""""""""""
+.SH PARAMETERS
+A
+.I parameter
+is an entity that stores values.
+It can be a
+.IR name ,
+a number, or one of the special characters listed below under
+.BR "Special Parameters" .
+A
+.I variable
+is a parameter denoted by a
+.IR name .
+A variable has a \fIvalue\fP and zero or more \fIattributes\fP.
+Attributes are assigned using the
+.B declare
+builtin command (see
+.B declare
+below in
+.SM
+.BR "SHELL BUILTIN COMMANDS" ).
+.PP
+A parameter is set if it has been assigned a value.  The null string is
+a valid value.  Once a variable is set, it may be unset only by using
+the
+.B unset
+builtin command (see
+.SM
+.B SHELL BUILTIN COMMANDS
+below).
+.PP
+A
+.I variable
+may be assigned to by a statement of the form
+.RS
+.PP
+\fIname\fP=[\fIvalue\fP]
+.RE
+.PP
+If
+.I value
+is not given, the variable is assigned the null string.  All
+.I values
+undergo tilde expansion, parameter and variable expansion,
+command substitution, arithmetic expansion, and quote
+removal (see
+.SM
+.B EXPANSION
+below).  If the variable has its
+.B integer
+attribute set, then
+.I value
+is evaluated as an arithmetic expression even if the $((...)) expansion is
+not used (see
+.B "Arithmetic Expansion"
+below).
+.""""""""""""""""""""""""""""""""""
+
+
+
+
