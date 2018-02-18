@@ -150,7 +150,7 @@ void eval( char *cmdline ) {
  */
 int builtin_command( char **argv ) {
 	// if arg[0] == "quit", execute it imemdiately and exit
-	if ( strcmp(argv[0], "quit") == 0 ) exit(0);
+	if ( strcmp(argv[0], "quit") == 0 || !strcmp(argv[0], "q")) exit(0);
 
 	// ignore singleton &
 	if ( strcmp(argv[0], "&") == 0 ) return 1;
@@ -186,6 +186,22 @@ int builtin_command( char **argv ) {
 			printf("Invalid format.");
 		}
 
+		return 1;
+	}
+	
+	/* Set environment variables */
+	if (strchr(argv[0], '=')) {
+		if (argv[1] != NULL) { /* too many arguments */
+			printf("%s: Command not found.\n", argv[1]);
+		} else {
+			set_env_var(argv);
+		}
+		return 1;
+	}
+	
+	/* Enable stats */
+	if (!strcmp(argv[0], "stats")) {
+		run_stats(argv, &STATS);
 		return 1;
 	}
 
