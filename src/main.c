@@ -7,6 +7,7 @@
 void eval( char *cmdline );
 int parse_line( char *buf, char **argv );
 int builtin_command( char **argv );
+int parse_id(char *argv);
 void cowsay( char **argv );
 
 int main(int argc, char **argv) {
@@ -212,7 +213,7 @@ int builtin_command( char **argv ) {
 	
 	/* Enable stats */
 	if (!strcmp(argv[0], "stats")) {
-		run_stats(argv, &STATS);
+		enable_stats(argv, &STATS);
 		return 1;
 	}
 

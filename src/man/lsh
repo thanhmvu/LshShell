@@ -190,18 +190,5 @@ Thanh Vu, Lafayette College
 vut@lafayette.edu
 
 
-.SH FILES
-.PD 0
-
-.TP
-.I /bin/bash
-The \fBbash\fP executable
-
-.TP
-.I ~/.bashrc
-The individual per-interactive-shell startup file
-.PD
-
-
 .zZ
 .zY
