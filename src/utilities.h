@@ -2,9 +2,12 @@
 #define __FUNC_H__
 
 #include <sys/resource.h>
+#include <sys/types.h>
 
 #define MAX_STR_LENGTH 1000
 #define MAX_ARR_LENGTH 1000
+#define PIPE_READ_END 0
+#define PIPE_WRITE_END 1
 
 // Global variables
 char *ENV_VARS[MAX_ARR_LENGTH];

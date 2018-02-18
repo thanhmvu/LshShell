@@ -1,6 +1,8 @@
 #include "signal_handler.h"
 #include "utilities.h"
 
+#define MAXARGS 128
+
 /* Function prototypes */
 void eval( char *cmdline );
 int parse_line( char *buf, char **argv );
@@ -49,7 +51,6 @@ void eval( char *cmdline ) {
 	char buf[MAXLINE];    	// holds modified command line
 	int bg;         		// indicate whether the job is in background or foreground
 	pid_t pid;        		// process id
-	int i, j;
 
 	// copy the command line as a string to buf so that it can be modified and parsed
 	strcpy( buf, cmdline );
@@ -63,9 +64,30 @@ void eval( char *cmdline ) {
 	// if built-in command, execute it immediately
 	if ( builtin_command(argv) ) return;
 
-	// argv array also holding environment variables
+
+	// Substitue environment variables
 	char *expanded_argv[MAX_ARR_LENGTH];
-	int cnt_expanded_argv = construct_expanded_argv(argv, expanded_argv);
+	int i, j = 0;
+	for(i = 0; argv[i] != NULL ; i++) {
+
+		// Look up and replace environment variable
+		char *str = malloc(MAX_STR_LENGTH);
+		substitute_env_vars_no_space(argv[i], str);
+		
+		// Add non-empty output to new argv array
+		if(strcmp(str,"")) {
+			expanded_argv[j] = str;
+			j++;
+		}
+	}
+	expanded_argv[j] = NULL; 	// null-terminated array
+	int cnt_expanded_argv = i;	// save array length
+
+	// piping
+	// int pipes = count_pipes(expanded_argv);
+	// if (pipes > 0) {
+	// 	run_pipe_commands(expanded_argv, pipes, &pid);
+	// }
 
 	// Set up mask to indicate SIGCHLD should be blocked
 	sigset_t mask, prev_mask;
@@ -235,22 +257,3 @@ int parse_id(char *argv) {
 	return id;
 }
 
-int construct_expanded_argv(char **argv, char **expanded_argv) {
-	int i, j;
-
-	for ( i = 0 ; argv[i] != NULL ; i++ ) {
-
-		/* Look up and replace environment variable */
-		char *str = malloc(MAX_STR_LENGTH);
-		substitute_env_vars_no_space(argv[i], str);
-
-		/* Add non-empty output to new argv array */
-		if(strcmp(str,"")) {
-			expanded_argv[j] = str;
-			j++;
-		}
-	}
-
-	expanded_argv[j] = NULL; /* null-terminated array */
-	return i;
-}
