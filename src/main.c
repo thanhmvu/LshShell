@@ -61,10 +61,6 @@ void eval( char *cmdline ) {
 	// ignore empty lines
 	if (argv[0] == NULL) return;
 
-	// if built-in command, execute it immediately
-	if ( builtin_command(argv) ) return;
-
-
 	// Substitue environment variables
 	char *expanded_argv[MAX_ARR_LENGTH];
 	int i, j = 0;
@@ -83,6 +79,14 @@ void eval( char *cmdline ) {
 	expanded_argv[j] = NULL; 	// null-terminated array
 	int cnt_expanded_argv = i;	// save array length
 
+	// if built-in command, execute it immediately, then free memory
+	if ( builtin_command(expanded_argv) ) {
+		for ( int i = 0 ; i < cnt_expanded_argv ; i++ ) {
+			free(expanded_argv[i]);
+		}
+		return;
+	}
+	
 	// Set up mask to indicate SIGCHLD should be blocked
 	sigset_t mask, prev_mask;
 	Sigemptyset( &mask );
