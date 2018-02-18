@@ -7,6 +7,7 @@
 void eval( char *cmdline );
 int parse_line( char *buf, char **argv );
 int builtin_command( char **argv );
+int parse_id(char *argv);
 
 int main(int argc, char **argv) {
 
