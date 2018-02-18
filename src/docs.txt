@@ -1,0 +1,9 @@
+PROJECT DOCUMENT
+
+Huy Nguyen – Thanh Vu
+
+1.	Obstacles we overcame
+	* Familiarizing with C.  This is our very first project in C (and a major one no less). There were many features we take for granted in Java (e.g., splitting string) that we ended up struggling to re-implement in C. Huy was particularly startled when he realized C has no built-in Boolean type.
+	* Theory to practice. Concurrency is particularly confusing, and while we knew the basic concepts 
+
+2.	Things we learned
