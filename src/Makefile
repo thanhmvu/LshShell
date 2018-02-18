@@ -1,7 +1,7 @@
 FLAGS = -pthread -m64
 
 compile:
-	gcc main.c signal_handler.c job.c csapp.c $(FLAGS) -o ../install/bin/main
+	gcc main.c utilities.c signal_handler.c job.c csapp.c $(FLAGS) -o ../install/bin/main
 	gcc foo.c csapp.c -o ../install/bin/foo
 	gcc loop.c -o ../install/bin/loop
 	

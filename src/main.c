@@ -1,5 +1,5 @@
 #include "signal_handler.h"
-#define MAXARGS 128
+#include "utilities.h"
 
 /* Function prototypes */
 void eval( char *cmdline );
@@ -23,16 +23,20 @@ int main(int argc, char **argv) {
 	char cmdline[MAXLINE];		// the string holding the command line
 	init_jobs();				// initialize the array of jobs
 
+	STATS = (struct Stats) {0, 0, 0, 0, 0};
+
 	while (1) {
 		// print special prompt signaling that we are in the shell
-		printf( "lsh> " );
+		char *lshprompt = getenv("lshprompt");
+		printf("%s> ", (lshprompt) ? lshprompt : "lsh"); 
 
 		// get the command line from stdin
 		Fgets(cmdline, MAXLINE, stdin);
 
 		// exit when reaching end of file
-		if ( feof(stdin) ) 
+		if ( feof(stdin) ) {
 			exit(0);
+		}
 
 		// evaluate and execute input command
 		eval( cmdline );
@@ -45,6 +49,7 @@ void eval( char *cmdline ) {
 	char buf[MAXLINE];    	// holds modified command line
 	int bg;         		// indicate whether the job is in background or foreground
 	pid_t pid;        		// process id
+	int i, j;
 
 	// copy the command line as a string to buf so that it can be modified and parsed
 	strcpy( buf, cmdline );
@@ -57,6 +62,10 @@ void eval( char *cmdline ) {
 
 	// if built-in command, execute it immediately
 	if ( builtin_command(argv) ) return;
+
+	// argv array also holding environment variables
+	char *expanded_argv[MAX_ARR_LENGTH];
+	int cnt_expanded_argv = construct_expanded_argv(argv, expanded_argv);
 
 	// Set up mask to indicate SIGCHLD should be blocked
 	sigset_t mask, prev_mask;
@@ -75,7 +84,7 @@ void eval( char *cmdline ) {
 		Setpgid(0, 0);
 
 		// execute bash command with environment variables
-		if ( execvp(argv[0], argv) < 0 ) {
+		if ( execvp(expanded_argv[0], expanded_argv) < 0 ) {
 			printf( "%s: Command not found.\n", argv[0] );
 			exit(0);
 		}
@@ -107,6 +116,10 @@ void eval( char *cmdline ) {
 	// enable SIGCHLD signal again
 	Sigprocmask( SIG_SETMASK, &prev_mask, NULL );
 
+	// free memory 
+	for ( int i = 0 ; i < cnt_expanded_argv ; i++ ) {
+		free(expanded_argv[i]);
+	}
 }
 
 /*
@@ -220,4 +233,24 @@ int parse_id(char *argv) {
 	}
 
 	return id;
+}
+
+int construct_expanded_argv(char **argv, char **expanded_argv) {
+	int i, j;
+
+	for ( i = 0 ; argv[i] != NULL ; i++ ) {
+
+		/* Look up and replace environment variable */
+		char *str = malloc(MAX_STR_LENGTH);
+		substitute_env_vars_no_space(argv[i], str);
+
+		/* Add non-empty output to new argv array */
+		if(strcmp(str,"")) {
+			expanded_argv[j] = str;
+			j++;
+		}
+	}
+
+	expanded_argv[j] = NULL; /* null-terminated array */
+	return i;
 }
