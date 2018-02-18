@@ -3,7 +3,16 @@ PROJECT DOCUMENT
 Huy Nguyen – Thanh Vu
 
 1.	Obstacles we overcame
+
 	* Familiarizing with C.  This is our very first project in C (and a major one no less). There were many features we take for granted in Java (e.g., splitting string) that we ended up struggling to re-implement in C. Huy was particularly startled when he realized C has no built-in Boolean type.
-	* Theory to practice. Concurrency is particularly confusing, and while we knew the basic concepts 
+
+	* Theory to practice. Concurrency is particularly confusing, and while we knew the basic concepts, managing all the signal blocking/unblocking/sending in the context of this project proved very challenging.
+
+	* Piping, and piping in background (e.g., A | B | C &) is the hardest task. Nevertheless, we persevered.
 
 2.	Things we learned
+
+	* C programming. We have become much more comfortable coding in C, thanks to our meticulous approach in building this project. As a matter of fact, in the majority of our code, every single line of code is commented ...
+
+	* Unix. Previously we thought the shell and man page are very sophisticated pieces of software incomprehensible to us. As it turns out, having developed these ourselves, we understand them much better now. In a nutshell, the shell is a fancy while loop, and man file has its own little syntax just like HTML ...
+
