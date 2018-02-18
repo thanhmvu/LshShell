@@ -205,7 +205,7 @@ int builtin_command( char **argv ) {
 	
 	/* Enable stats */
 	if (!strcmp(argv[0], "stats")) {
-		run_stats(argv, &STATS);
+		enable_stats(argv, &STATS);
 		return 1;
 	}
 

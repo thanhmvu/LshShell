@@ -24,8 +24,6 @@ struct Stats {
 } STATS;
 
 // Functions
-int split_env_var(char _var_val[], char *delim, char *results[2]);
-int split_str(char str0[], char *delim, char *results[]);
 int split_str_by_char(char *buf, char **argv, char token);
 void substitute_env_vars_no_space(char *str, char * result);
 int count_pipes(char **argv);
@@ -34,7 +32,7 @@ void print_if_error(int status, char * mess);
 
 int stats_enabled(struct Stats st);
 void print_enabled_stats(struct Stats st);
-void run_stats(char **argv, struct Stats *st);
+void enable_stats(char **argv, struct Stats *st);
 void display_stats(struct Stats st);
 
 void set_env_var(char **argv);
