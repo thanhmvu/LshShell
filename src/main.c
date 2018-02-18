@@ -83,12 +83,6 @@ void eval( char *cmdline ) {
 	expanded_argv[j] = NULL; 	// null-terminated array
 	int cnt_expanded_argv = i;	// save array length
 
-	// piping
-	// int pipes = count_pipes(expanded_argv);
-	// if (pipes > 0) {
-	// 	run_pipe_commands(expanded_argv, pipes, &pid);
-	// }
-
 	// Set up mask to indicate SIGCHLD should be blocked
 	sigset_t mask, prev_mask;
 	Sigemptyset( &mask );
@@ -97,8 +91,14 @@ void eval( char *cmdline ) {
 	// Disable SIGCHLD Signal
 	Sigprocmask(SIG_BLOCK, &mask, &prev_mask);
 
+	// piping
+	int pipes = count_pipes(expanded_argv);
+	if (pipes > 0) {
+		run_pipe_commands(expanded_argv, pipes, &pid);
+	}
+	
 	// create a child running user's job
-	if ( (pid = Fork()) == 0 ) {
+	else if ( (pid = Fork()) == 0 ) {
 		// unblock signal in child process
 		Sigprocmask( SIG_SETMASK, &prev_mask, NULL );
 
