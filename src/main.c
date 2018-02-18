@@ -7,6 +7,7 @@
 void eval( char *cmdline );
 int parse_line( char *buf, char **argv );
 int builtin_command( char **argv );
+void cowsay( char **argv );
 
 int main(int argc, char **argv) {
 
@@ -165,6 +166,12 @@ int builtin_command( char **argv ) {
 		return 1;
 	}
 
+	// cowsay bonus :D
+	if ( strcmp(argv[0], "cowsay") == 0 ) {
+		cowsay( argv );
+		return 1;
+	}
+
 	// fb <job id>
 	if ( strcmp(argv[0], "fg") == 0 ) {
 		// get the job's pid or jid
@@ -277,3 +284,17 @@ int parse_id(char *argv) {
 	return id;
 }
 
+/* cowsay - draw a cow saying whatever you want */
+void cowsay(char **argv) {
+	printf("| ");
+	for (int i = 1 ; argv[i] != NULL ; i++) {
+		printf("%s ", argv[i]);
+	}
+	printf("|\n");
+	printf(" \\ \n");
+	printf("  \\ ^__^\n");
+	printf("    (oo)\\_______\n");
+	printf("    (__)\\       )\\/\\\n");
+	printf("        ||----w |\n");
+	printf("        ||     ||\n");
+}
