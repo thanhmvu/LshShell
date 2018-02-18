@@ -103,5 +103,105 @@ below).
 .""""""""""""""""""""""""""""""""""
 
 
+.SH "SHELL BUILTIN COMMANDS"
+.\" start of bash_builtins
+.zZ
+.PP
+Below are the built-in commands supported by this shell.
+.sp .5
+.PD 0
+
+.TP
+\fBbg\fP [\fIjobspec\fP]
+Resume each suspended job \fIjobspec\fP in the background, as if it
+had been started with
+.BR & .
+
+.TP
+\fBecho\fP [\fIarg\fP ...]
+Output the \fIarg\fPs, separated by spaces, followed by a newline.
+The return status is 0 unless a write error occurs.
+Any environment variable will be looked up and replaced with their value. 
+For example, 
+.B echo $PATH 
+prints out the value of the PATH environment variable. 
+
+.TP
+\fBfg\fP [\fIjobspec\fP]
+Resume
+.I jobspec
+in the foreground, and make it the current job.
+
+.TP
+\fBjobs\fP 
+List all jobs currently running in the background.
+
+.TP
+\fBstats\fP [\fB\-uspvialc\fP]
+.PD
+Enable process statistics on each external command executed. The options have the following
+meanings:
+.RS
+.PD 0
+.TP
+.B \-u
+Enable the display of the cpu time spent in user mode.
+.TP
+.B \-s
+Enable the display of the cpu time spent in system/kernel mode.
+.TP
+.B \-p
+Enable the display of the hard page faults.
+.TP
+.B \-v
+Enable the display of the voluntary context switches.
+.TP
+.B \-i
+Enable the display of  the involuntary context switches.
+.TP
+.B \-a
+Enable the display of all of the above options.
+.TP
+.B \-l
+List of stats that are enabled.
+.TP
+.B \-c
+Clear all the enabled stats. Shell runs external commands like the default shell.
+.PD
+.PP
+Multiple flags can be listed after one dash, e.g. -us instead of -u -s, as well as a series of single flags.
+.PP
+When multiple statistics are returned, they are always printed in the same order.
+
+.\" bash_builtins
+.if \n(zZ=1 .ig zZ
 
 
+.SH AUTHORS
+
+.PP
+Huy Nguyen, Lafayette College
+.br
+nguyenha@lafayette.edu
+
+.PP
+Thanh Vu, Lafayette College
+.br
+vut@lafayette.edu
+
+
+.SH FILES
+.PD 0
+
+.TP
+.I /bin/bash
+The \fBbash\fP executable
+
+.TP
+.I ~/.bashrc
+The individual per-interactive-shell startup file
+.PD
+
+
+.zZ
+.zY
